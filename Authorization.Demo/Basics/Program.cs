@@ -1,6 +1,12 @@
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddAuthentication("CookieAuth").AddCookie("CookieAuth", configureOptions =>
+{
+    configureOptions.Cookie.Name = "Grandmas.Cookie";
+    configureOptions.LoginPath = "/Home/Authenticate";
+});
+
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
@@ -16,6 +22,12 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
+
+// Who are you?
+app.UseAuthentication();
+
+// are you allowed?
+app.UseAuthorization();
 
 app.UseEndpoints(endpoints =>
 {
