@@ -1,4 +1,8 @@
 using Basics.AuthorizationRequirements;
+using Basics.Controllers;
+using Basics.CustomPolicyProvider;
+using Basics.Transformer;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 
@@ -35,14 +39,25 @@ builder.Services.AddAuthorization(config =>
     });
 });
 
+builder.Services.AddSingleton<IAuthorizationPolicyProvider, CustomAuthorizationPolicyProvider>();
+builder.Services.AddScoped<IAuthorizationHandler, SecurityLevelHandler>();
 builder.Services.AddScoped<IAuthorizationHandler, CustomRequireClaimHandler>();
+builder.Services.AddScoped<IAuthorizationHandler, CookieJarAuthorizationHandle>();
+builder.Services.AddScoped<IClaimsTransformation, ClaimsTransformation>();
 
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews(config =>
+{
+    var defaultAuthBuilder = new AuthorizationPolicyBuilder();
+    var defaultAuthPolicy = defaultAuthBuilder.RequireAuthenticatedUser().Build();
+
+    //// global authorization filter
+    //config.Filters.Add(new AuthorizeFilter(defaultAuthPolicy));
+});
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+if (!app.Environment.IsDevelopment())
 {
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();

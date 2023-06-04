@@ -1,1 +1,18 @@
-﻿<h1>Home page</h1>
+﻿@using Microsoft.AspNetCore.Authorization;
+@inject IAuthorizationService authorizationService
+
+<h1>Home page</h1>
+
+@if (User.Identity.IsAuthenticated)
+{
+    <h2>User is authenticated</h2>
+}
+else
+{
+    <h2>User is NOT authenticated</h2>
+}
+
+@if((await authorizationService.AuthorizeAsync(User, "Claim.DoB")).Succeeded)
+{
+    <h3>User has DoB Claim</h3>
+}
