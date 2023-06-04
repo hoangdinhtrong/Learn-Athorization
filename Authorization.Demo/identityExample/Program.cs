@@ -1,6 +1,8 @@
 using IdentityExample.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using NETCore.MailKit.Extensions;
+using NETCore.MailKit.Infrastructure.Internal;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,6 +20,7 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>(config =>
         config.Password.RequireDigit = false;
         config.Password.RequireNonAlphanumeric = false;
         config.Password.RequireUppercase = false;
+        config.SignIn.RequireConfirmedEmail = true;
     })
     .AddEntityFrameworkStores<AppDbContext>()
     .AddDefaultTokenProviders();
@@ -28,6 +31,8 @@ builder.Services.ConfigureApplicationCookie(configCookie =>
     configCookie.LoginPath = "/Home/Login";
     configCookie.LogoutPath = "/Home/Logout";
 });
+
+builder.Services.AddMailKit(mailConfig => mailConfig.UseMailKit(builder.Configuration.GetSection("Email").Get<MailKitOptions>()));
 
 builder.Services.AddControllersWithViews();
 

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualBasic;
+using NETCore.MailKit.Core;
 
 namespace IdentityExample.Controllers
 {
@@ -11,12 +12,15 @@ namespace IdentityExample.Controllers
     {
         private readonly UserManager<IdentityUser> _userManager;
         private readonly SignInManager<IdentityUser> _signInManager;
+        private readonly IEmailService _emailService;
 
         public HomeController(UserManager<IdentityUser> userManager,
-            SignInManager<IdentityUser> signInManager)
+            SignInManager<IdentityUser> signInManager,
+            IEmailService emailService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _emailService = emailService;
         }
         public IActionResult Index()
         {
@@ -39,13 +43,14 @@ namespace IdentityExample.Controllers
         {
             var user = await _userManager.FindByNameAsync(userName);
 
-            if (user == null) return BadRequest($"User {userName} is not exist");
-
-            var result = await _signInManager.PasswordSignInAsync(user, password, false, false);
-
-            if (result.Succeeded)
+            if (user != null)
             {
-                return RedirectToAction("Index");
+                var result = await _signInManager.PasswordSignInAsync(user, password, false, false);
+
+                if (result.Succeeded)
+                {
+                    return RedirectToAction("Index");
+                }
             }
             return View("Login");
         }
@@ -67,9 +72,39 @@ namespace IdentityExample.Controllers
             var result = await _userManager.CreateAsync(user, password);
             if (result.Succeeded)
             {
-                return RedirectToAction("Login");
+                var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                if(!string.IsNullOrWhiteSpace(code))
+                {
+                    var link = Url.Action(nameof(VerifyEmail), "Home", 
+                        new { userId = user.Id, code }, 
+                        Request.Scheme, 
+                        Request.Host.ToString());
+
+                    await _emailService.SendAsync("test@test.com", "email verify", $"<a href=\"{link}\">Verify Email</a>", true);
+                    return RedirectToAction("EmailVerification");
+                }
             }
             return View("Register");
+        }
+
+        public async Task<IActionResult> VerifyEmail(string userId, string code)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null) return BadRequest();
+
+            var result = await _userManager.ConfirmEmailAsync(user, code);
+
+            if (result.Succeeded)
+            {
+                return View();
+            }
+
+            return BadRequest();
+        }
+
+        public IActionResult EmailVerification()
+        {
+            return View();
         }
 
         public async Task<IActionResult> Logout()
@@ -78,4 +113,4 @@ namespace IdentityExample.Controllers
             return RedirectToAction("Login");
         }
     }
-}
+}  
