@@ -1,6 +1,34 @@
+using IdentityExample.Models;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+
+builder.Services.AddDbContext<AppDbContext>(config =>
+{
+    config.UseInMemoryDatabase("Memory");
+});
+
+// Identity Registers the services
+builder.Services.AddIdentity<IdentityUser, IdentityRole>(config =>
+    {
+        config.Password.RequiredLength = 4;
+        config.Password.RequireDigit = false;
+        config.Password.RequireNonAlphanumeric = false;
+        config.Password.RequireUppercase = false;
+    })
+    .AddEntityFrameworkStores<AppDbContext>()
+    .AddDefaultTokenProviders();
+
+builder.Services.ConfigureApplicationCookie(configCookie =>
+{
+    configCookie.Cookie.Name = "Identity.Cookie";
+    configCookie.LoginPath = "/Home/Login";
+    configCookie.LogoutPath = "/Home/Logout";
+});
+
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
@@ -15,8 +43,12 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
+// Who are you?
+app.UseAuthentication();
+
 app.UseRouting();
 
+// are you allowed?
 app.UseAuthorization();
 
 app.UseEndpoints(endpoints =>
