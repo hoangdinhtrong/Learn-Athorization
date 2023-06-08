@@ -4,16 +4,11 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddAuthentication("Bearer").AddJwtBearer("Bearer", config =>
 {
     config.Authority = "https://localhost:7028/";
-    config.Audience = "ApiOne";
+    config.Audience = "ApiTwo";
     config.RequireHttpsMetadata = false;
 });
 
-builder.Services.AddCors(confg =>
-    confg.AddPolicy("AllowAll", 
-        p => p.AllowAnyOrigin()
-            .AllowAnyMethod()
-            .AllowAnyHeader()));
-
+builder.Services.AddHttpClient();
 builder.Services.AddControllers();
 
 var app = builder.Build();
@@ -29,8 +24,6 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
-
-app.UseCors("AllowAll");
 
 app.UseAuthentication();
 app.UseAuthorization();

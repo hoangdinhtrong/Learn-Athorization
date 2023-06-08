@@ -1,20 +1,8 @@
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddAuthentication("Bearer").AddJwtBearer("Bearer", config =>
-{
-    config.Authority = "https://localhost:7028/";
-    config.Audience = "ApiOne";
-    config.RequireHttpsMetadata = false;
-});
-
-builder.Services.AddCors(confg =>
-    confg.AddPolicy("AllowAll", 
-        p => p.AllowAnyOrigin()
-            .AllowAnyMethod()
-            .AllowAnyHeader()));
-
-builder.Services.AddControllers();
+builder.Services.AddControllersWithViews()
+    .AddRazorRuntimeCompilation();
 
 var app = builder.Build();
 
@@ -29,11 +17,6 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
-
-app.UseCors("AllowAll");
-
-app.UseAuthentication();
-app.UseAuthorization();
 
 app.UseEndpoints(endpoints =>
 {
