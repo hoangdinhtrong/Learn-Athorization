@@ -54,6 +54,14 @@ builder.Services.AddControllersWithViews(config =>
     //config.Filters.Add(new AuthorizeFilter(defaultAuthPolicy));
 });
 
+builder.Services.AddRazorPages().AddRazorPagesOptions(options =>
+{
+    options.Conventions.AuthorizePage("/Razor/Secured");
+    options.Conventions.AuthorizePage("/Razor/Policy", "Admin");
+    options.Conventions.AuthorizeFolder("/RazorSecured");
+    options.Conventions.AllowAnonymousToPage("/RazorSecured/Anon");
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -77,6 +85,7 @@ app.UseAuthorization();
 app.UseEndpoints(endpoints =>
 {
     endpoints.MapDefaultControllerRoute();
+    endpoints.MapRazorPages();
 });
 
 app.Run();
