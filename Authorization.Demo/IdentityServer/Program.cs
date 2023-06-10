@@ -8,9 +8,20 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddDbContext<AppDbContext>(config =>
 {
-    config.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
-    //config.UseInMemoryDatabase("Memory");
+    //config.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+    config.UseInMemoryDatabase("Memory");
 });
+
+// AddIdentity registers the services
+builder.Services.AddIdentity<IdentityUser, IdentityRole>(config =>
+{
+    config.Password.RequiredLength = 4;
+    config.Password.RequireDigit = false;
+    config.Password.RequireNonAlphanumeric = false;
+    config.Password.RequireUppercase = false;
+})
+    .AddEntityFrameworkStores<AppDbContext>()
+    .AddDefaultTokenProviders();
 
 builder.Services.ConfigureApplicationCookie(configCookie =>
 {

@@ -77,6 +77,22 @@ namespace IdentityServer
                     AllowAccessTokensViaBrowser = true,
                     RequireConsent = false,
                 },
+                new Client()
+                {
+                    ClientId = "angular-client",
+                    AllowedGrantTypes = GrantTypes.Code,
+                    RedirectUris = { "http://localhost:4200" },
+                    RequirePkce = true,
+                    AllowAccessTokensViaBrowser = true,
+                    AllowedScopes = {
+                        IdentityServer4.IdentityServerConstants.StandardScopes.OpenId,
+                        "ApiOne",
+                    },
+                    AllowedCorsOrigins = { "http://localhost:4200" },
+                    RequireClientSecret = false,
+                    PostLogoutRedirectUris = { "http://localhost:4200" },                  
+                    RequireConsent = false,
+                }
             };
     }
 }
